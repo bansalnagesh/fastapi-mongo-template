@@ -8,7 +8,7 @@ Group=ec2-user
 WorkingDirectory=/home/ec2-user/app
 Environment="PATH=/home/ec2-user/app/venv/bin"
 EnvironmentFile=/home/ec2-user/app/.env
-ExecStart=/home/ec2-user/app/venv/bin/python main.py
+ExecStart=/home/ec2-user/app/venv/bin/python3 main.py
 Restart=always
 
 [Install]

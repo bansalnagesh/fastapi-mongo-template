@@ -65,18 +65,20 @@ deploy_to_instance() {
             exit 1
         fi
 
-        # Install Python 3.8
-        if ! command -v python3.8 &> /dev/null; then
-            echo 'Installing Python 3.8...'
-            sudo amazon-linux-extras enable python3.8
-            sudo yum install -y python3.8 python3.8-devel
+        # Install Python 3.9.6
+        if ! command -v python3.9 &> /dev/null; then
+            echo 'Installing Python 3.9.6...'
+            cd /opt
+            sudo wget https://www.python.org/ftp/python/3.9.6/Python-3.9.6.tgz
+            sudo tar xzf Python-3.9.6.tgz
+            cd Python-3.9.6
+            sudo ./configure --enable-optimizations
+            sudo make altinstall
+            sudo rm -f /opt/Python-3.9.6.tgz
 
-            sudo alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
-            sudo alternatives --set python3 /usr/bin/python3.8
-
-            curl -O https://bootstrap.pypa.io/get-pip.py
-            python3.8 get-pip.py --user
-            rm get-pip.py
+            # Create symbolic links
+            sudo ln -sf /usr/local/bin/python3.9 /usr/bin/python3
+            sudo ln -sf /usr/local/bin/pip3.9 /usr/bin/pip3
         fi
 
         # Configure git and clone repository
