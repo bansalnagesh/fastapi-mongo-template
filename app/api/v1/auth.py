@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.api.deps import get_user_repo
+from app.api.deps import get_user_repo, auth_rate_limiter
 from app.core.security import get_password_hash, verify_password, create_access_token, refresh_token, JWTBearer
 from app.db.repositories.user import UserRepository
 from app.schemas.token import Token
@@ -14,7 +14,11 @@ from app.schemas.user import UserCreate, UserResponse
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/register", response_model=UserResponse)
+@router.post(
+    "/register",
+    response_model=UserResponse,
+    dependencies=[Depends(auth_rate_limiter)]
+)
 async def register(
         user_create: UserCreate,
         user_repo: Annotated[UserRepository, Depends(get_user_repo)]
@@ -42,7 +46,11 @@ async def register(
     return user
 
 
-@router.post("/login", response_model=Token)
+@router.post(
+    "/login",
+    response_model=Token,
+    dependencies=[Depends(auth_rate_limiter)]
+)
 async def login(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         user_repo: Annotated[UserRepository, Depends(get_user_repo)]
@@ -59,7 +67,11 @@ async def login(
     return create_access_token(str(user.id))
 
 
-@router.post("/refresh", response_model=Token, dependencies=[Depends(JWTBearer())])
+@router.post(
+    "/refresh",
+    response_model=Token,
+    dependencies=[Depends(JWTBearer()), Depends(auth_rate_limiter)]
+)
 async def refresh(token: str):
     """Refresh access token"""
     return refresh_token(token)
