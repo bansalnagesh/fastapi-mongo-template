@@ -26,12 +26,19 @@ class Settings(BaseSettings):
     # AWS Configuration
     AWS_ACCESS_KEY_ID: Optional[str] = None
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
+    AWS_KEY_PAIR_NAME: Optional[str] = None
+    AWS_SSH_KEY_PATH: Optional[str] = None
     AWS_REGION: str = "ap-south-1"
+    STACK_NAME: str = "fastapi-stack"
 
     # Logging
     LOG_LEVEL: str = "INFO"
     CLOUDWATCH_LOG_GROUP: Optional[str] = None
     CLOUDWATCH_LOG_STREAM: Optional[str] = None
+
+    GITHUB_TOKEN: Optional[str] = None
+    GITHUB_REPO_URL: Optional[str] = None
+    GITHUB_BRANCH: Optional[str] = None
 
     class Config:
         env_file = ".env"
