@@ -1,0 +1,15 @@
+[Unit]
+Description=FastAPI application
+After=network.target
+
+[Service]
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/home/ec2-user/app
+Environment="PATH=/home/ec2-user/app/venv/bin"
+EnvironmentFile=/home/ec2-user/app/.env
+ExecStart=/home/ec2-user/app/venv/bin/python main.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
