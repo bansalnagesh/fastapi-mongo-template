@@ -1,12 +1,8 @@
-# Base repository with common CRUD operations
-
-
-from datetime import datetime
+# app/db/repositories/base.py
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
-
 from bson import ObjectId
+from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorCollection
-
 from app.db.mongodb import db
 from app.models.base import MongoBaseModel
 
@@ -25,7 +21,7 @@ class BaseRepository(Generic[ModelType]):
     async def find_one(self, query: Dict) -> Optional[ModelType]:
         doc = await self.collection.find_one(query)
         if doc:
-            return self.model(**doc)
+            return self.model.from_mongo(doc)
         return None
 
     async def find_by_id(self, id: Union[str, ObjectId]) -> Optional[ModelType]:
@@ -44,11 +40,12 @@ class BaseRepository(Generic[ModelType]):
         if sort:
             cursor = cursor.sort(sort)
         docs = await cursor.to_list(length=limit)
-        return [self.model(**doc) for doc in docs]
+        return [self.model.from_mongo(doc) for doc in docs]
 
     async def create(self, data: Dict[str, Any]) -> ModelType:
-        doc = self.model(**data)
-        result = await self.collection.insert_one(doc.model_dump(by_alias=True))
+        model_instance = self.model(**data)
+        mongo_data = model_instance.to_mongo()
+        result = await self.collection.insert_one(mongo_data)
         return await self.find_by_id(result.inserted_id)
 
     async def update(

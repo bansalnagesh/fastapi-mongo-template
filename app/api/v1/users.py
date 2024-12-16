@@ -1,19 +1,25 @@
 # User management endpoints
 # app/api/v1/users.py
 from typing import Annotated, List
+
 from fastapi import APIRouter, Depends, HTTPException, status
+
 from app.api.deps import get_current_active_user, get_current_superuser, get_user_repo
+from app.core.security import get_password_hash, JWTBearer
 from app.db.repositories.user import UserRepository
 from app.models.user import User
 from app.schemas.user import UserResponse, UserUpdate
-from app.core.security import get_password_hash
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(
+    prefix="/users",
+    tags=["users"],
+    dependencies=[Depends(JWTBearer())]  # Global protection for all routes
+)
 
 
 @router.get("/me", response_model=UserResponse)
 async def read_current_user(
-    current_user: Annotated[User, Depends(get_current_active_user)]
+        current_user: Annotated[User, Depends(get_current_active_user)]
 ):
     """Get current user information."""
     return current_user

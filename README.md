@@ -16,7 +16,7 @@ A production-ready FastAPI template with MongoDB, JWT authentication, Google OAu
 1. Clone this repository
 2. Copy `.env.example` to `.env` and fill in your values
 3. Install dependencies: `pip install -r requirements.txt`
-4. Run the application: `uvicorn main:app --reload`
+4. Run the application: `python main.py`
 
 ## Project Structure
 [Project structure description]

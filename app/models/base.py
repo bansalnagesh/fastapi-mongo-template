@@ -2,35 +2,10 @@
 from datetime import datetime
 from typing import Any, Dict
 from bson import ObjectId
-from pydantic import BaseModel, Field, ConfigDict, GetJsonSchemaHandler
-from pydantic.json_schema import JsonSchemaValue
-from pydantic_core.core_schema import CoreSchema, str_schema
-
-class PyObjectId:
-    @classmethod
-    def __get_pydantic_core_schema__(
-        cls,
-        _source_type: Any,
-        _handler: Any,
-    ) -> CoreSchema:
-        return str_schema()
-
-    @classmethod
-    def __get_pydantic_json_schema__(
-        cls,
-        _core_schema: CoreSchema,
-        _handler: GetJsonSchemaHandler,
-    ) -> JsonSchemaValue:
-        return {"type": "string"}
-
-    @classmethod
-    def validate(cls, v: Any) -> ObjectId:
-        if not ObjectId.is_valid(v):
-            raise ValueError("Invalid ObjectId")
-        return ObjectId(v)
+from pydantic import BaseModel, Field, ConfigDict
 
 class MongoBaseModel(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    id: str = Field(default_factory=lambda: str(ObjectId()), alias="_id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     is_active: bool = True
@@ -40,3 +15,18 @@ class MongoBaseModel(BaseModel):
         arbitrary_types_allowed=True,
         json_encoders={ObjectId: str}
     )
+
+    def to_mongo(self) -> Dict[str, Any]:
+        """Convert to MongoDB format"""
+        data = self.model_dump(by_alias=True, exclude_none=True)
+        # Convert string id to ObjectId
+        if "_id" in data:
+            data["_id"] = ObjectId(data["_id"])
+        return data
+
+    @classmethod
+    def from_mongo(cls, data: Dict[str, Any]) -> "MongoBaseModel":
+        """Create model instance from MongoDB data"""
+        if "_id" in data:
+            data["_id"] = str(data["_id"])
+        return cls(**data)

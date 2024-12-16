@@ -1,7 +1,6 @@
+# app/models/user.py
 from typing import Optional, List
-
 from .base import MongoBaseModel
-
 
 class User(MongoBaseModel):
     email: str
